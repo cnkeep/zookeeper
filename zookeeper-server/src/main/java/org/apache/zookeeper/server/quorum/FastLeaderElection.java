@@ -714,6 +714,7 @@ public class FastLeaderElection implements Election {
     }
 
     /**
+     * PK 投票(epoch > zxid > mid)
      * Check if a pair (server id, zxid) succeeds our
      * current vote.
      *
@@ -1025,6 +1026,7 @@ public class FastLeaderElection implements Election {
 
                         voteSet = getVoteTracker(recvset, new Vote(proposedLeader, proposedZxid, logicalclock.get(), proposedEpoch));
 
+                        // 是否过半
                         if (voteSet.hasAllQuorums()) {
 
                             // Verify if there is any change in the proposed leader

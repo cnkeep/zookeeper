@@ -104,6 +104,8 @@ public class Follower extends Learner {
                 try {
                     self.setLeaderAddressAndId(leaderServer.addr, leaderServer.getId());
                     self.setZabState(QuorumPeer.ZabState.SYNCHRONIZATION);
+
+                    // 同步数据
                     syncWithLeader(newEpochZxid);
                     self.setZabState(QuorumPeer.ZabState.BROADCAST);
                     completedSync = true;

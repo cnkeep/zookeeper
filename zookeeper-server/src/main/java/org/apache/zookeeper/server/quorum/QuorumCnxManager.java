@@ -76,6 +76,7 @@ import org.slf4j.LoggerFactory;
 
 
 /**
+ * TODO 选举连接管理器
  * This class implements a connection manager for leader election using TCP. It
  * maintains one connection for every pair of servers. The tricky part is to
  * guarantee that there is exactly one connection for every pair of servers that
@@ -539,7 +540,7 @@ public class QuorumCnxManager {
     }
 
     /**
-     * If this server receives a connection request, then it gives up on the new
+     * TODO If this server receives a connection request, then it gives up on the new
      * connection if it wins. Notice that it checks whether it has a connection
      * to this server already or not. If it does, then it sends the smallest
      * possible long value to lose the challenge.

@@ -249,7 +249,9 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
                 LOG.warn("Election address has not been initialized");
                 return;
             }
+            // TODO 数据交互连接
             this.addr.recreateSocketAddresses();
+            // 选举连接
             this.electionAddr.recreateSocketAddresses();
         }
 
@@ -1278,6 +1280,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         case 2:
             throw new UnsupportedOperationException("Election Algorithm 2 is not supported.");
         case 3:
+            // TODO 构建leader选举管理器
             QuorumCnxManager qcm = createCnxnManager();
             QuorumCnxManager oldQcm = qcmRef.getAndSet(qcm);
             if (oldQcm != null) {
@@ -1468,6 +1471,11 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
                     LOG.info("LEADING");
                     try {
                         setLeader(makeLeader(logFactory));
+                        /**
+                         * block in this position
+                         * 这里有最大等待时间initLimit，可能时间到了还没完成lead阶段
+                         * 则重新进入looking阶段
+                          */
                         leader.lead();
                         setLeader(null);
                     } catch (Exception e) {

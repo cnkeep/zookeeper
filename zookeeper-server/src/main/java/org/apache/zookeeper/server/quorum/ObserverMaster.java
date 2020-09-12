@@ -448,6 +448,7 @@ public class ObserverMaster extends LearnerMaster implements Runnable {
         thread = new Thread(this, "ObserverMaster");
         thread.start();
         pinger = Executors.newSingleThreadScheduledExecutor();
+        // 定时ping
         pinger.scheduleAtFixedRate(ping, self.tickTime / 2, self.tickTime / 2, TimeUnit.MILLISECONDS);
     }
 

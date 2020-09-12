@@ -477,6 +477,9 @@ public class Leader extends LearnerMaster {
             closeSockets();
         }
 
+        /***
+         * 接受follower的数据请求
+         */
         class LearnerCnxAcceptorHandler implements Runnable {
             private ServerSocket serverSocket;
             private CountDownLatch latch;
@@ -593,7 +596,8 @@ public class Leader extends LearnerMaster {
 
             leaderStateSummary = new StateSummary(self.getCurrentEpoch(), zk.getLastProcessedZxid());
 
-            // Start thread that waits for connection requests from
+            // TODO 开启数据传输服务
+            //  Start thread that waits for connection requests from
             // new followers.
             cnxAcceptor = new LearnerCnxAcceptor();
             cnxAcceptor.start();
@@ -659,6 +663,7 @@ public class Leader extends LearnerMaster {
             self.setZabState(QuorumPeer.ZabState.SYNCHRONIZATION);
 
             try {
+                // 核心逻辑在LearnHandler中，数据同步完的标示是收到过半follower的ack
                 waitForNewLeaderAck(self.getId(), zk.getZxid());
             } catch (InterruptedException e) {
                 shutdown("Waiting for a quorum of followers, only synced with sids: [ "
@@ -724,6 +729,9 @@ public class Leader extends LearnerMaster {
             // If not null then shutdown this leader
             String shutdownMessage = null;
 
+            /**
+             * 定时心跳检测是否有过半的支持率
+             */
             while (true) {
                 synchronized (this) {
                     long start = Time.currentElapsedTime();
@@ -1448,6 +1456,17 @@ public class Leader extends LearnerMaster {
     // VisibleForTesting
     protected boolean electionFinished = false;
 
+    /***
+     * 这段代码真的对多线程知识要求的深
+     * 首先多个Follower与leader建立连接，leader通过learnerHandler去处理每个follower, 多个learnerhandler多线程调用该方法
+     * 注意大家加锁的是同一个对象electingFollowers，当follower不过半时大家阻塞在while中的wait方法，此时锁资源释放，
+     * 当n/2+1个follower进来时，能获取到锁，进入方法执行，且满足过半策略，进入if判断，同时唤醒其他在while中等待的线程，所有人皆大欢喜
+     * 但是假设在initLimit*tickTime时间内没有过半，则异常退出，放弃当前状态，进入looking
+     * @param id
+     * @param ss
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
     public void waitForEpochAck(long id, StateSummary ss) throws IOException, InterruptedException {
         synchronized (electingFollowers) {

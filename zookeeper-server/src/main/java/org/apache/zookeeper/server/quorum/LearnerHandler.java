@@ -1070,6 +1070,7 @@ public class LearnerHandler extends ZooKeeperThread {
      * ping calls from the learnerMaster to the peers
      */
     public void ping() {
+        //TODO 检查投票ack确认时间是否超过了synLimit, 超过不发ping, 关闭连接
         // If learner hasn't sync properly yet, don't send ping packet
         // otherwise, the learner will crash
         if (!sendingThreadStarted) {
